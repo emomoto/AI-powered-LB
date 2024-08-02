@@ -1,0 +1,18 @@
+{
+  "name": "legalbot-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for the LegalBot application",
+  "main": "index.tsx",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2"
+  }
+}
