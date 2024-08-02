@@ -1,1 +1,1 @@
-# AI-powered-LB
+This repository contains the code for the AI-powered-LB project, which is focused on establishing a backend server using Express.js. The main JavaScript file within this project is responsible for initializing the Express application, configuring the necessary routes for handling various requests, and ensuring the server is running and listening on a specified port. This setup is aimed at facilitating the development of lightweight, efficient, and scalable web applications or APIs.
