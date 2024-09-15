@@ -1,48 +1,59 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true
-}).then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
+async function connectDB() {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log('MongoDB Connected');
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+connectDB();
 
 const userSchemaOptions = {
-  toJSON: { virtuals: false },
-  toObject: { virtuals: false }
+    toJSON: { virtuals: false },
+    toObject: { virtuals: false }
 };
 
 const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    index: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    index: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    index: true
-  }
+    username: {
+        type: String,
+        required: true,
+        unique: true, 
+        trim: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true, 
+        trim: true,
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    }
 }, userSchemaOptions);
 
 const User = mongoose.model('User', UserSchema);
 
 module.exports = User;
 
-User.find().lean().then(users => {
-  // handle users
-});
+async function findUsers() {
+    try {
+        const users = await User.find().lean();
+        console.log(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
+
+// findUsers();
