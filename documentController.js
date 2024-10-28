@@ -3,55 +3,55 @@ const multer = require('multer');
 const dotenv = require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { analyzeDocument } = require('./documentAnalyzer');
+const { analyzeDocumentContent } = require('./documentAnalyzer');
 
 const app = express();
 
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/');
+const uploadStorageConfiguration = multer.diskStorage({
+  destination: (request, file, callback) => {
+    callback(null, 'uploads/');
   },
-  filename: function(req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  filename: (request, file, callback) => {
+    callback(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
   }
 });
 
-const upload = multer({ storage: storage });
+const documentUpload = multer({ storage: uploadStorageConfiguration });
 
 app.use(express.static('public'));
 
-app.post('/upload', upload.single('document'), (req, res) => {
-  const file = req.file;
-  if (!file) {
-    return res.status(400).send('Please upload a document.');
+app.post('/upload', documentUpload.single('document'), (request, response) => {
+  const uploadedFile = request.file;
+  if (!uploadedFile) {
+    return response.status(400).send('Please upload a document.');
   }
 
-  res.send({ message: 'Document uploaded successfully!', filePath: req.file.path });
+  response.send({ message: 'Document uploaded successfully!', filePath: request.file.path });
 });
 
-app.get('/analyze/:fileName', (req, res) => {
-  const fileName = req.params.fileName;
-  const filePath = path.join(__dirname, 'uploads', fileName);
+app.get('/analyze/:fileName', (request, response) => {
+  const requestedFileName = request.params.fileName;
+  const fullPathToDocument = path.join(__dirname, 'uploads', requestedFileName);
 
-  fs.exists(filePath, exists => {
-    if (!exists) {
-      return res.status(404).send('The file does not exist.');
+  fs.exists(fullPathToDocument, doesExist => {
+    if (!doesExist) {
+      return response.status(404).send('The file does not exist.');
     }
 
-    analyzeDocument(filePath)
+    analyzeDocumentContent(fullPathToDocument)
       .then(analysisResult => {
-        res.json({
+        response.json({
           message: 'Analysis complete',
           analysis: analysisResult
         });
       })
       .catch(error => {
-        res.status(500).send('An error occurred during the document analysis.');
+        response.status(500).send('An error occurred during the document analysis.');
       });
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+const serverPort = process.env.PORT || 3000;
+app.listen(serverPort, () => {
+  console.log(`Server is running on port ${serverPort}`);
 });
