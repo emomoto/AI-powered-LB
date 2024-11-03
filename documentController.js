@@ -7,51 +7,51 @@ const { analyzeDocumentContent } = require('./documentAnalyzer');
 
 const app = express();
 
-const uploadStorageConfiguration = multer.diskStorage({
-  destination: (request, file, callback) => {
-    callback(null, 'uploads/');
+const uploadStorageConfig = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
   },
-  filename: (request, file, callback) => {
-    callback(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+  filename: (req, file, cb) => {
+    cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
   }
 });
 
-const documentUpload = multer({ storage: uploadStorageConfiguration });
+const documentUploader = multer({ storage: uploadStorageConfig });
 
 app.use(express.static('public'));
 
-app.post('/upload', documentUpload.single('document'), (request, response) => {
-  const uploadedFile = request.file;
-  if (!uploadedFile) {
-    return response.status(400).send('Please upload a document.');
+app.post('/upload', documentUploader.single('document'), (req, res) => {
+  const uploadedDocument = req.file;
+  if (!uploadedDocument) {
+    return res.status(400).send('Please upload a document.');
   }
 
-  response.send({ message: 'Document uploaded successfully!', filePath: request.file.path });
+  res.send({ message: 'Document uploaded successfully!', filePath: req.file.path });
 });
 
-app.get('/analyze/:fileName', (request, response) => {
-  const requestedFileName = request.params.fileName;
-  const fullPathToDocument = path.join(__dirname, 'uploads', requestedFileName);
+app.get('/analyze/:fileName', (req, res) => {
+  const fileNameRequested = req.params.fileName;
+  const fullPathToRequestedDocument = path.join(__dirname, 'uploads', fileNameRequested);
 
-  fs.exists(fullPathToDocument, doesExist => {
+  fs.exists(fullPathToRequestedDocument, doesExist => {
     if (!doesExist) {
-      return response.status(404).send('The file does not exist.');
+      return res.status(404).send('The file does not exist.');
     }
 
-    analyzeDocumentContent(fullPathToDocument)
-      .then(analysisResult => {
-        response.json({
+    analyzeDocumentContent(fullPathToRequestedDocument)
+      .then(analysisResults => {
+        res.json({
           message: 'Analysis complete',
-          analysis: analysisResult
+          analysis: analysisResults
         });
       })
       .catch(error => {
-        response.status(500).send('An error occurred during the document analysis.');
+        res.status(500).send('An error occurred during the document analysis.');
       });
   });
 });
 
-const serverPort = process.env.PORT || 3000;
-app.listen(serverPort, () => {
-  console.log(`Server is running on port ${serverPort}`);
+const applicationPort = process.env.PORT || 3000;
+app.listen(applicationPort, () => {
+  console.log(`Server is running on port ${applicationPort}`);
 });
