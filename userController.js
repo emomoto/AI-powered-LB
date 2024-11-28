@@ -14,36 +14,47 @@ const generateToken = (user) => {
 };
 
 app.post('/register', async (req, res) => {
+  if(!req.body.username || !req.body.password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = { username: req.body.username, password: hashedPassword };
     
     const existingUser = users.find(u => u.username === user.username);
     if (existingUser) {
-      return res.status(400).send('Username already taken');
+      return res.status(400).json({ error: 'Username already taken' });
     }
 
     users.push(user);
     res.status(201).send('User created');
-  } catch {
-    res.status(500).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 app.post('/login', async (req, res) => {
+  if(!req.body.username || !req.body.password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+
   const user = users.find(u => u.username === req.body.username);
   if (user == null) {
-    return res.status(400).send('Cannot find user');
+    return res.status(400).json({ error: 'Cannot find user' });
   }
+
   try {
     if (await bcrypt.compare(req.body.password, user.password)) {
       const token = generateToken(user);
       res.json({ token: token });
     } else {
-      res.send('Not Allowed');
+      res.status(401).json({ error: 'Not Allowed' });
     }
-  } catch {
-    res.status(500).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
